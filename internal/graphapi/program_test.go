@@ -148,6 +148,9 @@ func (suite *GraphTestSuite) TestQueryPrograms() {
 func (suite *GraphTestSuite) TestMutationCreateProgram() {
 	t := suite.T()
 
+	startDate := time.Now().AddDate(0, 0, 1)
+	endDate := time.Now().AddDate(0, 0, 360)
+
 	testCases := []struct {
 		name        string
 		request     openlaneclient.CreateProgramInput
@@ -166,11 +169,11 @@ func (suite *GraphTestSuite) TestMutationCreateProgram() {
 		{
 			name: "happy path, all basic input",
 			request: openlaneclient.CreateProgramInput{
-				Name:        "mitb program",
-				Description: lo.ToPtr("being the best"),
-				Status:      &enums.ProgramStatusInProgress,
-				// StartDate:            lo.ToPtr(time.Now().AddDate(0, 0, 1)),
-				// EndDate:              lo.ToPtr(time.Now().AddDate(0, 0, 360)),
+				Name:                 "mitb program",
+				Description:          lo.ToPtr("being the best"),
+				Status:               &enums.ProgramStatusInProgress,
+				StartDate:            &startDate,
+				EndDate:              &endDate,
 				AuditorReady:         lo.ToPtr(false),
 				AuditorWriteComments: lo.ToPtr(true),
 				AuditorReadComments:  lo.ToPtr(true),
@@ -259,13 +262,13 @@ func (suite *GraphTestSuite) TestMutationCreateProgram() {
 			if tc.request.StartDate == nil {
 				assert.Empty(t, resp.CreateProgram.Program.StartDate)
 			} else {
-				assert.Equal(t, tc.request.StartDate, resp.CreateProgram.Program.StartDate)
+				assert.WithinDuration(t, startDate, *resp.CreateProgram.Program.StartDate, 1*time.Minute)
 			}
 
 			if tc.request.EndDate == nil {
 				assert.Empty(t, resp.CreateProgram.Program.EndDate)
 			} else {
-				assert.Equal(t, tc.request.EndDate, resp.CreateProgram.Program.EndDate)
+				assert.WithinDuration(t, endDate, *resp.CreateProgram.Program.EndDate, 1*time.Minute)
 			}
 
 			if tc.request.AuditorReady == nil {
