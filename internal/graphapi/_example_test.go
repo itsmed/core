@@ -13,8 +13,20 @@ import (
 
 // This file provides examples for testing the basic CRUD operations for the Openlane API for a given object
 // you can start by replacing `OBJECT` with the object you are testing, e.g. `OBJECT`
-// for org owned objects, the setup should be pretty similar to the examples below
-// for objects with complex relationships, you may need to create additional objects to test the relationships
+
+// For org owned objects, the setup should be pretty similar to the examples below
+// For objects with complex relationships, you may need to create additional objects to test the relationships
+
+// Seed data for test users is created in seed_test.go, refer to the file for details
+// the seeded data includes:
+// - testUser1 (org owner), viewOnlyUser (read-only access), and adminUser (view and edit access)
+//   as part of one organization
+// - testUser2 part of another organization
+// if you find yourself needing additional test users, you can add them to the seed data so they
+// are available for all tests
+
+// Additionally, there are clients that can be used based on JWT, personal access token, or API tokens
+// All tests should include the cross section of all clients and users to ensure proper access control
 
 // Before getting started, you'll need to add an OBJECTBuilder to the models_test.go file
 // and add the necessary fields to the OBJECTBuilder struct
@@ -211,31 +223,13 @@ func (suite *GraphTestSuite) TestMutationCreateOBJECT() {
 			ctx:    context.Background(),
 		},
 		{
-			name:    "user not authorized",
-			request: openlaneclient.CreateOBJECTInput{
-				// add all input for the OBJECT
-			},
-			client:   suite.client.api,
-			ctx:      testUser2.UserCtx,
-			errorMsg: notauthorizedErrorMsg,
-		},
-		{
 			name:    "user not authorized, not enough permissions",
 			request: openlaneclient.CreateOBJECTInput{
 				// add all input for the OBJECT
 			},
-			client:   suite.client.api,
-			ctx:      viewOnlyUser.UserCtx,
-			errorMsg: notAuthorizedErrorMsg,
-		},
-		{
-			name:    "user not authorized, no permissions",
-			request: openlaneclient.CreateOBJECTInput{
-				// add all input for the OBJECT
-			},
-			client:   suite.client.api,
-			ctx:      viewOnlyUser.UserCtx,
-			errorMsg: notFoundErrorMsg,
+			client:      suite.client.api,
+			ctx:         viewOnlyUser.UserCtx,
+			expectedErr: notAuthorizedErrorMsg,
 		},
 		// add additional test cases for the OBJECT
 		//   - add test cases for required fields not being provided
@@ -274,7 +268,6 @@ func (suite *GraphTestSuite) TestMutationUpdateOBJECT() {
 	t := suite.T()
 
 	OBJECT := (&OBJECTBuilder{client: suite.client}).MustNew(testUser1.UserCtx, t)
-	OBJECT := (&GroupBuilder{client: suite.client}).MustNew(testUser1.UserCtx, t)
 
 	testCases := []struct {
 		name        string
@@ -305,18 +298,18 @@ func (suite *GraphTestSuite) TestMutationUpdateOBJECT() {
 			request: openlaneclient.UpdateOBJECTInput{
 				// add field to update
 			},
-			client:   suite.client.api,
-			ctx:      viewOnlyUser.UserCtx,
-			errorMsg: notAuthorizedErrorMsg,
+			client:      suite.client.api,
+			ctx:         viewOnlyUser.UserCtx,
+			expectedErr: notAuthorizedErrorMsg,
 		},
 		{
 			name:    "update not allowed, no permissions",
 			request: openlaneclient.UpdateOBJECTInput{
 				// add field to update
 			},
-			client:   suite.client.api,
-			ctx:      testUser2.UserCtx,
-			errorMsg: notFoundErrorMsg,
+			client:      suite.client.api,
+			ctx:         testUser2.UserCtx,
+			expectedErr: notFoundErrorMsg,
 		},
 	}
 
@@ -354,33 +347,33 @@ func (suite *GraphTestSuite) TestMutationDeleteOBJECT() {
 		expectedErr string
 	}{
 		{
-			name:        "not authorized, delete OBJECT",
+			name:        "not authorized, delete",
 			idToDelete:  OBJECT1.ID,
 			client:      suite.client.api,
 			ctx:         testUser2.UserCtx,
 			expectedErr: notFoundErrorMsg,
 		},
 		{
-			name:       "happy path, delete OBJECT",
+			name:       "happy path, delete",
 			idToDelete: OBJECT1.ID,
 			client:     suite.client.api,
 			ctx:        testUser1.UserCtx,
 		},
 		{
-			name:        "OBJECT already deleted, not found",
+			name:        "already deleted, not found",
 			idToDelete:  OBJECT1.ID,
 			client:      suite.client.api,
 			ctx:         testUser1.UserCtx,
-			expectedErr: "OBJECT not found",
+			expectedErr: "not found",
 		},
 		{
-			name:       "happy path, delete OBJECT using personal access token",
+			name:       "happy path, delete using personal access token",
 			idToDelete: OBJECT2.ID,
 			client:     suite.client.apiWithPAT,
 			ctx:        context.Background(),
 		},
 		{
-			name:        "unknown OBJECT, not found",
+			name:        "unknown id, not found",
 			idToDelete:  ulids.New().String(),
 			client:      suite.client.api,
 			ctx:         testUser1.UserCtx,

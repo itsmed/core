@@ -250,6 +250,13 @@ type TaskBuilder struct {
 	GroupID        string
 }
 
+type ProgramBuilder struct {
+	client *client
+
+	// Fields
+	Name string
+}
+
 // MustNew organization builder is used to create, without authz checks, orgs in the database
 func (o *OrganizationBuilder) MustNew(ctx context.Context, t *testing.T) *ent.Organization {
 	// no auth, so allow policy
@@ -805,4 +812,19 @@ func (e *TaskBuilder) MustNew(ctx context.Context, t *testing.T) *ent.Task {
 	task := taskCreate.SaveX(ctx)
 
 	return task
+}
+
+// MustNew program builder is used to create, without authz checks, programs in the database
+func (e *ProgramBuilder) MustNew(ctx context.Context, t *testing.T) *ent.Program {
+	ctx = privacy.DecisionContext(ctx, privacy.Allow)
+
+	if e.Name == "" {
+		e.Name = gofakeit.AppName()
+	}
+
+	program := e.client.db.Program.Create().
+		SetName(e.Name).
+		SaveX(ctx)
+
+	return program
 }
