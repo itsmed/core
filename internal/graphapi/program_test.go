@@ -166,11 +166,11 @@ func (suite *GraphTestSuite) TestMutationCreateProgram() {
 		{
 			name: "happy path, all basic input",
 			request: openlaneclient.CreateProgramInput{
-				Name:                 "mitb program",
-				Description:          lo.ToPtr("being the best"),
-				Status:               &enums.ProgramStatusInProgress,
-				StartDate:            lo.ToPtr(time.Now().AddDate(0, 0, 1)),
-				EndDate:              lo.ToPtr(time.Now().AddDate(0, 0, 360)),
+				Name:        "mitb program",
+				Description: lo.ToPtr("being the best"),
+				Status:      &enums.ProgramStatusInProgress,
+				// StartDate:            lo.ToPtr(time.Now().AddDate(0, 0, 1)),
+				// EndDate:              lo.ToPtr(time.Now().AddDate(0, 0, 360)),
 				AuditorReady:         lo.ToPtr(false),
 				AuditorWriteComments: lo.ToPtr(true),
 				AuditorReadComments:  lo.ToPtr(true),
