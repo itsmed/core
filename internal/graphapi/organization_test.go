@@ -46,7 +46,7 @@ func (suite *GraphTestSuite) TestQueryOrganization() {
 			queryID:            testUser1.OrganizationID,
 			client:             suite.client.apiWithPAT,
 			ctx:                context.Background(),
-			orgMembersExpected: 2, // owner and view only user
+			orgMembersExpected: 3, // owner, admin, and view only user
 		},
 		{
 			name:     "invalid-id",
